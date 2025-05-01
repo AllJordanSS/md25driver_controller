@@ -1,0 +1,54 @@
+motor_controller:
+  ros__parameters:
+    traction_control:
+      control_rate: 100
+      pid_params_left:
+        P: 15.0 #300
+        I: 30.0 # 30
+        D: 0.0
+        lBounds: -12.0
+        hBounds: 12.0
+        windupGuard: 0.15
+      pid_params_right:
+        P: 15.0 # 200
+        I: 30.0 # 20
+        D: 0.0
+        lBounds: -12.0
+        hBounds: 12.0
+        windupGuard: 0.15
+    traction_general:
+        encoders_topic: "/md25_encoders"
+        cmd_vel_topic: "/cmd_vel"
+        md25_cmd_topic: "/md25_voltage_commands"
+        wheel_radius: 0.175
+        wheels_separation: 0.20
+
+wheels_odometry:
+  ros__parameters:
+    traction_general:
+      rate: 10
+      encoders_topic: "/md25_encoders"
+      odom_camera_topic: "/camera/odom/sample"
+      odom_topic: "/wheels_odom" 
+      wheel_radius: 0.175
+      wheels_separation: 0.20
+      linearGain: 10.0
+      angularGain: 40.0
+
+md25_base_controller:
+  ros__parameters:
+    md25:
+      i2c_bus: "/dev/i2c-3"
+      i2c_address: 0x58
+      regulator: true
+      timeout: true
+      acquisition_rate: 100
+      publish_topics:
+        encoders: "md25_encoders"
+        data: "md25_data"
+      subscribe_topics:
+        commands: "md25_voltage_commands"
+        reset_encoders: "md25/reset"
+    encoders:                             
+      cpr: 48.0           #Passos totais do encoders ou pulsos por rotação
+      motorRatio: 46.85   #Valor da redução entre motor e rodas
