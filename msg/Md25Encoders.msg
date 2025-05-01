@@ -1,0 +1,7 @@
+std_msgs/Header header
+int32 encoder_l
+int32 encoder_r
+float32 left_vel_rpm
+float32 right_vel_rpm
+float32 left_delta_pulses
+float32 right_delta_pulses
