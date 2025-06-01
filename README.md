@@ -1,93 +1,273 @@
-# MD25Driver_controller_ROS2
+# md25driver_controller
 
+[![GitHub License](https://img.shields.io/github/license/AllJordanSS/md25driver_controller)](https://github.com/AllJordanSS/md25driver_controller/blob/main/LICENSE)
 
+O pacote `md25driver_controller` é um controlador ROS 2 projetado para integrar o hardware MD25 em sistemas robóticos móveis. Ele fornece funcionalidades para controle de motores, monitoramento de hardware e cálculo de odometria, permitindo que o robô seja controlado de forma precisa e eficiente.
 
-## Getting started
+Este pacote inclui três nós principais:
+- **`motor_controller_node`**: Controla os motores usando um controlador PID.
+- **`odometry_node`**: Calcula a odometria do robô com base nos dados dos encoders.
+- **`md25_base_controller_node`**: Gerencia a comunicação direta com o hardware MD25.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+---
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Principais Funcionalidades
 
-## Add your files
+### 1. Controle de Motores com PID
+O nó `motor_controller_node` implementa um controlador PID (Proporcional-Integral-Derivativo) para ajustar a velocidade dos motores com base em entradas de referência. O PID é configurável e pode ser ajustado para diferentes cenários de operação.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+#### Parâmetros Configuráveis do PID
+Os parâmetros do controlador PID podem ser ajustados no arquivo de configuração (`config/hardware.yaml`). Aqui estão os principais parâmetros:
 
+- **`kp`**: Ganho proporcional.
+- **`ki`**: Ganho integral.
+- **`kd`**: Ganho derivativo.
+- **`max_output`**: Valor máximo de saída do controlador.
+- **`min_output`**: Valor mínimo de saída do controlador.
+
+Esses parâmetros permitem ajustar o comportamento do controlador para diferentes cargas e condições de operação.
+
+#### Mapeamento de Tensão
+O nó também mapeia os valores de tensão mínima e máxima suportados pelo hardware MD25. Isso garante que os sinais enviados aos motores estejam dentro da faixa segura de operação.
+
+---
+
+### 2. Configuração de Hardware
+O nó `motor_controller_node` permite configurar parâmetros relacionados ao hardware do robô. Esses parâmetros são essenciais para garantir que o controle de motores e a odometria sejam calculados corretamente.
+
+#### Parâmetros Configuráveis
+- **`wheel_diameter`**: Diâmetro das rodas do robô (em metros).
+- **`encoder_cpr`**: Contagem de pulsos por revolução (CPR) dos encoders.
+- **`gear_ratio`**: Razão de redução entre o motor e as rodas.
+
+Esses parâmetros devem ser ajustados no arquivo de configuração (`config/hardware.yaml`) para corresponder às especificações do seu robô.
+
+---
+
+### 3. Cálculo de Odometria
+O nó `odometry_node` calcula a odometria do robô com base nos dados dos encoders. Ele publica mensagens no tópico `/odom` no formato padrão ROS 2 (`nav_msgs/Odometry`).
+
+#### Saída de Odometria
+A odometria inclui:
+- Posição (`x`, `y`) e orientação (`theta`) do robô no espaço.
+- Velocidades linear e angular.
+
+Essas informações podem ser usadas para navegação autônoma ou visualização em ferramentas como RViz.
+
+---
+
+## Instalação e Uso
+
+### 1. Pré-requisitos
+Certifique-se de que o ROS 2 Humble ou superior esteja instalado no seu sistema. Você também precisará do hardware MD25 conectado ao seu robô ou computador via I2C.
+
+### 2. Clonar o Repositório
+Clone o repositório para o seu workspace ROS 2:
+
+```bash
+cd ~/ros2_ws/src
+git clone https://github.com/AllJordanSS/md25driver_controller.git
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/AllJordanSS/md25driver_controller_ros2.git
-git branch -M main
-git push -uf origin main
+
+### 3. Compilar o Pacote
+Compile o pacote usando `colcon`:
+
+```bash
+cd ~/ros2_ws
+colcon build --packages-select md25driver_controller
+source install/setup.bash
 ```
 
-## Integrate with your tools
+### 4. Executar os Nós
+Você pode iniciar os nós individualmente ou usar o arquivo de lançamento fornecido.
 
-- [ ] [Set up project integrations](https://gitlab.com/AllJordanSS/md25driver_controller_ros2/-/settings/integrations)
+#### Execução Individual
+```bash
+ros2 run md25driver_controller motor_controller_node
+ros2 run md25driver_controller odometry_node
+ros2 run md25driver_controller md25_base_controller_node
+```
 
-## Collaborate with your team
+#### Usando o Arquivo de Lançamento
+```bash
+ros2 launch md25driver_controller motor_controler.launch.py
+```
+---
+### 5. **Interação com o Pacote**
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+O pacote `md25driver_controller` fornece uma interface ROS 2 padrão para interagir com o hardware MD25 e controlar seu robô. Abaixo estão descritos os principais tópicos e como configurar o controlador PID para sua base robótica.
 
-## Test and Deploy
+### **Publicar Comandos de Velocidade (`/cmd_vel`)**
+Para controlar a velocidade do robô, publique mensagens no tópico `/cmd_vel`. Esse tópico aceita mensagens do tipo `geometry_msgs/Twist`, que contêm informações de velocidade linear e angular.
 
-Use the built-in continuous integration in GitLab.
+Exemplo de comando para enviar um comando de movimento:
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+```bash
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "linear:
+  x: 0.5
+  y: 0.0
+  z: 0.0
+angular:
+  x: 0.0
+  y: 0.0
+  z: 0.2"
+```
 
-***
+- **`linear.x`**: Velocidade linear na direção frontal (em m/s).
+- **`angular.z`**: Velocidade angular em torno do eixo vertical (em rad/s).
 
-# Editing this README
+### **Ler Odometria (`/wheels_odom`)**
+A odometria calculada pelo nó `odometry_node` é publicada no tópico `/wheels_odom`. Esse tópico fornece mensagens no formato `nav_msgs/Odometry`, que incluem a posição (`x`, `y`, `theta`) e as velocidades linear e angular do robô.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Para visualizar a odometria em tempo real, use o seguinte comando:
 
-## Suggestions for a good README
+```bash
+ros2 topic echo /wheels_odom
+```
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+Essas informações podem ser usadas para navegação autônoma ou visualização em ferramentas como RViz.
 
-## Name
-Choose a self-explaining name for your project.
+### **Ler Dados dos Encoders (`/md25_encoders`)**
+Os dados dos encoders são publicados no tópico `/md25_encoders`. Esse tópico fornece mensagens personalizadas do tipo `md25_controller/msg/Md25Encoders`, que incluem informações como:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- Posição dos encoders (`encoder_l`, `encoder_r`).
+- Velocidade dos motores (`left_vel_rpm`, `right_vel_rpm`).
+- Variação de pulsos (`left_delta_pulses`, `right_delta_pulses`).
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+Para visualizar os dados dos encoders em tempo real, use o seguinte comando:
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```bash
+ros2 topic echo /md25_encoders
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Aqui está a seção de **Configuração** atualizada e organizada para cópia direta. Incluí detalhes sobre como configurar cada nó com base no arquivo `params.yaml` fornecido:
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+---
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### **6. Configuração**
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+#### **6.1 Arquivo de Configuração**
+O pacote `md25driver_controller` utiliza arquivos YAML (`config/param.yaml`) para configurar os parâmetros dos nós. Abaixo estão os principais parâmetros e suas descrições.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+---
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+#### **6.2 Configuração do Nó `motor_controller_node`
+Este nó é responsável pelo controle de motores usando um controlador PID. Ele também mapeia os tópicos relacionados aos encoders e comandos de velocidade.
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+##### **Parâmetros Configuráveis**
+```yaml
+motor_controller:
+  ros__parameters:
+    traction_control:
+      control_rate: 50                     # Frequência de controle (Hz)
+      pid_params_left:                     # Parâmetros PID para o motor esquerdo
+        P: 5.0                             # Ganho proporcional
+        I: 10.0                            # Ganho integral
+        D: 0.0                             # Ganho derivativo
+        lBounds: -12.0                     # Limite inferior de saída (tensão mínima)
+        hBounds: 12.0                      # Limite superior de saída (tensão máxima)
+        windupGuard: 0.15                  # Proteção contra windup (acumulação excessiva do termo integral)
+      pid_params_right:                    # Parâmetros PID para o motor direito
+        P: 5.0                             # Ganho proporcional
+        I: 10.0                            # Ganho integral
+        D: 0.0                             # Ganho derivativo
+        lBounds: -12.0                     # Limite inferior de saída (tensão mínima)
+        hBounds: 12.0                      # Limite superior de saída (tensão máxima)
+        windupGuard: 0.15                  # Proteção contra windup
+    traction_general:
+      encoders_topic: "/md25_encoders"     # Tópico para ler os dados dos encoders
+      cmd_vel_topic: "/cmd_vel"            # Tópico para receber comandos de velocidade
+      md25_cmd_topic: "/md25_voltage_commands" # Tópico para enviar comandos de tensão ao MD25
+      wheel_radius: 0.0325                 # Raio das rodas (em metros)
+      wheels_separation: 0.18              # Distância entre as rodas (em metros)
+```
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+##### **Dicas para Ajuste do PID**
+- **Ganho Proporcional (`P`)**: Controla a resposta imediata ao erro. Um valor muito alto pode causar oscilações, enquanto um valor muito baixo pode resultar em uma resposta lenta.
+- **Ganho Integral (`I`)**: Corrige erros acumulados ao longo do tempo. Use com cuidado para evitar instabilidade.
+- **Ganho Derivativo (`D`)**: Suaviza a resposta e reduz oscilações. Geralmente é usado em sistemas com alta inércia.
 
-## License
-For open source projects, say how it is licensed.
+Certifique-se de testar diferentes valores para encontrar a configuração ideal para sua base robótica.
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+---
+
+#### **6.3 Configuração do Nó `odometry_node`
+Este nó calcula a odometria do robô com base nos dados dos encoders.
+
+##### **Parâmetros Configuráveis**
+```yaml
+wheels_odometry:
+  ros__parameters:
+    traction_general:
+      rate: 10                            # Frequência de publicação da odometria (Hz)
+      encoders_topic: "/md25_encoders"    # Tópico para ler os dados dos encoders
+      odom_camera_topic: "/camera/odom/sample" # Tópico opcional para fusão de odometria visual
+      odom_topic: "/wheels_odom"          # Tópico para publicar a odometria calculada
+      wheel_radius: 0.0325                # Raio das rodas (em metros)
+      wheels_separation: 0.18             # Distância entre as rodas (em metros)
+      linearGain: 10.0                    # Ganho para cálculo de velocidade linear
+      angularGain: 40.0                   # Ganho para cálculo de velocidade angular
+```
+
+##### **Dicas para Configuração**
+- Certifique-se de que os valores de `wheel_radius` e `wheels_separation` correspondam às dimensões físicas do seu robô.
+- O ajuste dos ganhos `linearGain` e `angularGain` pode ser necessário para melhorar a precisão da odometria.
+
+---
+
+#### **6.4 Configuração do Nó `md25_base_controller_node`
+Este nó gerencia a comunicação direta com o hardware MD25.
+
+##### **Parâmetros Configuráveis**
+```yaml
+md25_base_controller:
+  ros__parameters:
+    md25:
+      i2c_bus: "/dev/i2c-3"               # Barramento I2C utilizado
+      i2c_address: 0x58                   # Endereço I2C do MD25
+      regulator: true                     # Habilita/desabilita o regulador de tensão
+      timeout: true                       # Habilita/desabilita o temporizador de segurança
+      acquisition_rate: 50                # Frequência de leitura dos dados do MD25 (Hz)
+      publish_topics:
+        encoders: "md25_encoders"         # Tópico para publicar os dados dos encoders
+        data: "md25_data"                 # Tópico para publicar os dados gerais do MD25
+      subscribe_topics:
+        commands: "md25_voltage_commands" # Tópico para receber comandos de tensão
+        reset_encoders: "md25/reset"      # Tópico para resetar os encoders
+    encoders:
+      cpr: 48.0                           # Contagem de pulsos por revolução (CPR) dos encoders
+      motorRatio: 46.85                   # Razão de redução entre o motor e as rodas
+```
+
+##### **Dicas para Configuração**
+- Verifique se o barramento I2C (`i2c_bus`) e o endereço (`i2c_address`) estão corretos para o seu hardware.
+- Ajuste o valor de `cpr` e `motorRatio` para corresponder às especificações dos encoders e do sistema de transmissão.
+
+---
+
+### **7. Resumo dos Parâmetros**
+| Parâmetro                | Descrição                                      | Exemplo          |
+|--------------------------|------------------------------------------------|------------------|
+| `control_rate`           | Frequência de controle do PID (Hz)             | `50`             |
+| `P`, `I`, `D`            | Ganhos do controlador PID                      | `5.0, 10.0, 0.0` |
+| `wheel_radius`           | Raio das rodas (m)                             | `0.0325`         |
+| `wheels_separation`      | Distância entre as rodas (m)                   | `0.18`           |
+| `encoders_topic`         | Tópico para ler os dados dos encoders          | `/md25_encoders` |
+| `cmd_vel_topic`          | Tópico para receber comandos de velocidade     | `/cmd_vel`       |
+| `odom_topic`             | Tópico para publicar a odometria               | `/wheels_odom`   |
+| `i2c_bus`                | Barramento I2C utilizado                       | `/dev/i2c-3`     |
+| `i2c_address`            | Endereço I2C do MD25                           | `0x58`           |
+| `cpr`                    | Contagem de pulsos por revolução dos encoders  | `48.0`           |
+| `motorRatio`             | Razão de redução entre motor e rodas           | `46.85`          |
+
+---
+
+Certifique-se de ajustar os parâmetros conforme as especificações do seu robô e hardware MD25.
+
+---
+
+## Contribuições
+Contribuições são bem-vindas! Se você encontrar problemas ou quiser adicionar novas funcionalidades, abra uma issue ou envie um pull request.
+
+---
+
