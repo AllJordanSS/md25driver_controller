@@ -161,15 +161,15 @@ motor_controller:
     traction_control:
       control_rate: 50                     # Frequência de controle (Hz)
       pid_params_left:                     # Parâmetros PID para o motor esquerdo
-        P: 5.0                             # Ganho proporcional
-        I: 10.0                            # Ganho integral
+        P: 1.0                             # Ganho proporcional
+        I: 0.05                            # Ganho integral
         D: 0.0                             # Ganho derivativo
         lBounds: -12.0                     # Limite inferior de saída (tensão mínima)
         hBounds: 12.0                      # Limite superior de saída (tensão máxima)
         windupGuard: 0.15                  # Proteção contra windup (acumulação excessiva do termo integral)
       pid_params_right:                    # Parâmetros PID para o motor direito
-        P: 5.0                             # Ganho proporcional
-        I: 10.0                            # Ganho integral
+        P: 1.0                             # Ganho proporcional
+        I: 0.05                            # Ganho integral
         D: 0.0                             # Ganho derivativo
         lBounds: -12.0                     # Limite inferior de saída (tensão mínima)
         hBounds: 12.0                      # Limite superior de saída (tensão máxima)
